@@ -26,7 +26,6 @@ class Header extends Component {
                     写文章
                     </Button>
                     <Button className="reg">注册</Button>
-
                 </Addition>
             </HeaderWrapper>
         );
