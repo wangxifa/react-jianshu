@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { CSSTransition } from 'react-transition-group';
 import { actionCreators } from './store';
 import { Link } from 'react-router-dom';
+import { actionCreate as loginActionCreate } from '../../pages/login/store'
 import {
   HeaderWrapper, Logo, Nav, NavItem, NavSearch, Addition, Button, SearchWrapper, SearchInfo, SearchInfoTitle,
   SearchInfoSwitch, SearchInfoItem, SearchInfoList
@@ -28,8 +29,8 @@ class Header extends Component {
           onMouseLeave={handleMouseLeave}>
           <SearchInfoTitle>
             热门搜索
-                <SearchInfoSwitch onClick={() => handleChangePage(page, totalPage,this.spinIcon)}>
-              <i ref={(icon) => {this.spinIcon = icon}}  className="iconfont spin">&#xe631;</i>
+                <SearchInfoSwitch onClick={() => handleChangePage(page, totalPage, this.spinIcon)}>
+              <i ref={(icon) => { this.spinIcon = icon }} className="iconfont spin">&#xe631;</i>
               换一批
                   </SearchInfoSwitch>
           </SearchInfoTitle>
@@ -43,16 +44,19 @@ class Header extends Component {
     }
   }
   render() {
-    const { focused, handleInputFocus, handleInputBlur, list } = this.props;
+    const { focused, handleInputFocus, handleInputBlur, list, login, logout } = this.props;
     return (
       <HeaderWrapper>
         <Link to='/'>
-        <Logo />
+          <Logo />
         </Link>
         <Nav>
           <NavItem className="left active">首页</NavItem>
           <NavItem className="left">下载App</NavItem>
-          <NavItem className="right">登录</NavItem>
+          {
+            login ? <NavItem onClick={logout} className="right">退出</NavItem> :
+              <Link to='/login'><NavItem className="right">登录</NavItem></Link>
+          }
           <NavItem className="right">
             <i className="iconfont">&#xe636;</i>
           </NavItem>
@@ -63,7 +67,7 @@ class Header extends Component {
               classNames="slide"
             >
               <NavSearch className={focused ? 'focused' : ''}
-                onFocus={() =>handleInputFocus(list)}
+                onFocus={() => handleInputFocus(list)}
                 onBlur={handleInputBlur}
               >
               </NavSearch>
@@ -75,10 +79,12 @@ class Header extends Component {
           </SearchWrapper>
         </Nav>
         <Addition>
-          <Button className="writting">
-            <i className="iconfont">&#xe600;</i>
-            写文章
+          <Link to='/write'>
+            <Button className="writting">
+              <i className="iconfont">&#xe600;</i>
+              写文章
             </Button>
+          </Link>
           <Button className="reg">注册</Button>
         </Addition>
       </HeaderWrapper>
@@ -93,12 +99,13 @@ const mapStateToProps = (state) => {
     page: state.getIn(['header', 'page']),
     totalPage: state.getIn(['header', 'totalPage']),
     mouseIn: state.getIn(['header', 'mouseIn']),
+    login: state.getIn(['login', 'login'])
   }
 }
 const mapDispathToProps = (dispatch) => {
   return {
     handleInputFocus(list) {
-      (list.size === 0) && dispatch(actionCreators.getList())    
+      (list.size === 0) && dispatch(actionCreators.getList())
       dispatch(actionCreators.searchFocus());
     },
     handleInputBlur() {
@@ -114,19 +121,21 @@ const mapDispathToProps = (dispatch) => {
     handleChangePage(page, totalPage, spin) {
       // console.log(spin)
       let originAngle = spin.style.transform.replace(/[^0-9]/ig, '');
-			if (originAngle) {
-				originAngle = parseInt(originAngle, 10);
-			}else {
-				originAngle = 0;
-			}
-			spin.style.transform = 'rotate(' + (originAngle + 360) + 'deg)';
+      if (originAngle) {
+        originAngle = parseInt(originAngle, 10);
+      } else {
+        originAngle = 0;
+      }
+      spin.style.transform = 'rotate(' + (originAngle + 360) + 'deg)';
       // console.log(originAngle);   
       if (page < totalPage) {
         dispatch(actionCreators.changePage(page + 1));
       } else {
         dispatch(actionCreators.changePage(1));
       }
-
+    },
+    logout() {
+      dispatch(loginActionCreate.logout())
     }
   }
 }
